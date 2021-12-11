@@ -1,11 +1,34 @@
 // --- Old .Net 5 approach.
+using Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
+
 namespace API
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
+            IHost host = CreateHostBuilder(args).Build();
+
+            using (IServiceScope scope = host.Services.CreateScope())
+            {
+                IServiceProvider services = scope.ServiceProvider;
+                ILoggerFactory loggerFactory = services.GetRequiredService<ILoggerFactory>();
+
+                try
+                {
+                    StoreContext context = services.GetRequiredService<StoreContext>();
+                    await context.Database.MigrateAsync();
+                    await StoreContextSeed.SeedAsync(context, loggerFactory);
+                }
+                catch (Exception exception)
+                {
+                    ILogger logger = loggerFactory.CreateLogger<Program>();
+                    logger.LogError(exception, "An error occure during migration");
+                }
+            }
+
+            host.Run();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
