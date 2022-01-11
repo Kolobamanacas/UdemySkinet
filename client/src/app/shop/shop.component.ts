@@ -13,7 +13,7 @@ import { ShopService } from './shop.service';
   styleUrls: ['./shop.component.scss']
 })
 export class ShopComponent implements OnInit {
-  @ViewChild('search', { static: true }) searchTerm: ElementRef<HTMLInputElement> = {} as ElementRef;
+  @ViewChild('search', { static: false }) searchTerm: ElementRef<HTMLInputElement> = {} as ElementRef;
 
   products: IProduct[] = [];
   brands: IProductBrand[] = [];
