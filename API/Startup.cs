@@ -3,6 +3,7 @@ using API.Helpers;
 using API.Middleware;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 
 namespace API
 {
@@ -20,6 +21,11 @@ namespace API
         {
             services.AddControllers();
             services.AddDbContext<StoreContext>(options => options.UseNpgsql(configuration.GetConnectionString("PostgreSQLLocal")));
+            services.AddSingleton<IConnectionMultiplexer>((localConfig) =>
+            {
+                ConfigurationOptions config = ConfigurationOptions.Parse(configuration.GetConnectionString("Redis"), true);
+                return ConnectionMultiplexer.Connect(config);
+            });
             services.AddAutoMapper(typeof(MappingProfiles));
             services.AddApplicationServices();
             services.AddSwaggerDocumentation();
