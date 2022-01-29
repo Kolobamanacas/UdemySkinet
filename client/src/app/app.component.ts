@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { setTheme } from 'ngx-bootstrap/utils';
+import { BasketService } from './basket/basket.service';
 
 @Component({
   selector: 'app-root',
@@ -9,10 +10,19 @@ import { setTheme } from 'ngx-bootstrap/utils';
 export class AppComponent implements OnInit {
   title = 'SkiNet';
 
-  constructor() {
+  constructor(private basketService: BasketService) {
     setTheme('bs4');
   }
 
   ngOnInit(): void {
+    const basketId = localStorage.getItem('basket_id');
+
+    if (basketId) {
+      this.basketService.getBasket(basketId).subscribe(() => {
+        console.log('Initialized basket.');
+      }, (error) => {
+        console.log(`Something went wrong during basket initizalization. Here is an error:\n${error}`);
+      });
+    }
   }
 }

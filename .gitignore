@@ -415,3 +415,6 @@ baseline.json
 
 # Don't share SSL certificates
 ssl/
+
+# Redis dump files
+*.rdb
