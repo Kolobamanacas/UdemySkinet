@@ -1,4 +1,6 @@
-﻿namespace API.Dtos;
+﻿using System;
+
+namespace API.Dtos;
 
 public class ProductToReturnDto
 {

@@ -2,7 +2,12 @@
 using API.Helpers;
 using API.Middleware;
 using Infrastructure.Data;
+using Infrastructure.Identity;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
 
 namespace API
@@ -21,6 +26,9 @@ namespace API
         {
             services.AddControllers();
             services.AddDbContext<StoreContext>(options => options.UseNpgsql(configuration.GetConnectionString("PostgreSQLLocal")));
+            services.AddDbContext<AppIdentityDbContext>(
+                options => options.UseNpgsql(configuration.GetConnectionString("IdentityConnection"))
+            );
             services.AddSingleton<IConnectionMultiplexer>((localConfig) =>
             {
                 ConfigurationOptions config = ConfigurationOptions.Parse(configuration.GetConnectionString("Redis"), true);
@@ -28,6 +36,7 @@ namespace API
             });
             services.AddAutoMapper(typeof(MappingProfiles));
             services.AddApplicationServices();
+            services.AddIdentityServices(configuration);
             services.AddSwaggerDocumentation();
             services.AddCors(
                 option => option.AddPolicy(
@@ -44,7 +53,10 @@ namespace API
             app.UseRouting();
             app.UseStaticFiles();
             app.UseCors("CorsPolicy");
+
+            app.UseAuthentication();
             app.UseAuthorization();
+
             app.UseSwaggerDocumentation();
 
             app.UseEndpoints(endpoints =>

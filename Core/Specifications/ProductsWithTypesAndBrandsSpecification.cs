@@ -1,5 +1,5 @@
 ﻿using Core.Entities;
-using System.Linq.Expressions;
+using System;
 
 namespace Core.Specifications;
 

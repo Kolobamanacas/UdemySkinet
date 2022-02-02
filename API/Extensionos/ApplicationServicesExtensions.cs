@@ -1,7 +1,10 @@
 ﻿using API.Errors;
 using Core.Interfaces;
 using Infrastructure.Data;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+using System.Linq;
 
 namespace API.Extensionos;
 
@@ -31,6 +34,8 @@ public static class ApplicationServicesExtensions
                 return new BadRequestObjectResult(errorResponse);
             };
         });
+
+        services.AddScoped<ITokenService, TokenService>();
 
         return services;
     }

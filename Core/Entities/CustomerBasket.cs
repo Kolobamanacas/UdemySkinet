@@ -1,4 +1,6 @@
-﻿namespace Core.Entities;
+﻿using System.Collections.Generic;
+
+namespace Core.Entities;
 
 public class CustomerBasket
 {

@@ -1,4 +1,6 @@
-﻿namespace API.Helpers;
+﻿using System.Collections.Generic;
+
+namespace API.Helpers;
 
 public class Pagination<T> where T : class
 {
