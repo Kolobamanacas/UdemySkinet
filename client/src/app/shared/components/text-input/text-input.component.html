@@ -1,0 +1,32 @@
+<div class="form-floating">
+  <input
+    [type]="type"
+    id="{{label}}"
+    #input (input)="onChangeKludge($event.target)"
+    (blur)="onTouchedKludge()"
+    class="form-control"
+    [ngClass]="(controlDir && controlDir.control && controlDir.control.touched)
+      ? !controlDir.control.valid
+        ? 'is-invalid'
+        : 'is-valid'
+      : ''"
+    placeholder="{{label}}">
+
+  <div *ngIf="controlDir && controlDir.control && controlDir.control.status === 'PENDING'" class="fa fa-spinner fa-spin loader"></div>
+
+  <label for="{{label}}">{{label}}</label>
+
+  <div
+    class="invalid-feedback"
+    *ngIf="(controlDir && controlDir.control && !controlDir.control.valid && controlDir.control.touched)">
+    <span *ngIf="controlDir.control.errors?.required">{{label}} is required</span>
+    <span *ngIf="controlDir.control.errors?.pattern">Ivalid email address</span>
+  </div>
+
+  <div
+  *ngIf="(controlDir && controlDir.control && !controlDir.control.valid && controlDir.control.dirty)"
+  class="invalid-feedback d-block"
+  >
+    <span *ngIf="controlDir.control.errors?.isEmailInUse">Email address is in use</span>
+  </div>
+</div>
