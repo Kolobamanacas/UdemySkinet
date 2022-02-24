@@ -1,8 +1,10 @@
 ﻿using Core.Entities;
+using Core.Entities.OrderAggregate;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -14,39 +16,61 @@ public class StoreContextSeed
     {
         try
         {
-            // Seed producs brands.
-            string brandsText = File.ReadAllText("..\\Infrastructure\\Data\\SeedData\\brands.json");
-            List<ProductBrand> brands = JsonSerializer.Deserialize<List<ProductBrand>>(brandsText);
-
-            foreach (ProductBrand brand in brands)
+            // Seed product brands.
+            if (!context.ProductBrands.Any())
             {
-                context.ProductBrands.Add(brand);
+                string brandsText = File.ReadAllText("..\\Infrastructure\\Data\\SeedData\\brands.json");
+                List<ProductBrand> brands = JsonSerializer.Deserialize<List<ProductBrand>>(brandsText);
+
+                foreach (ProductBrand brand in brands)
+                {
+                    context.ProductBrands.Add(brand);
+                }
+
+                await context.SaveChangesAsync();
             }
 
-            await context.SaveChangesAsync();
-
-            // Seed producs types.
-            string typesText = File.ReadAllText("..\\Infrastructure\\Data\\SeedData\\types.json");
-            List<ProductType> types = JsonSerializer.Deserialize<List<ProductType>>(typesText);
-
-            foreach (ProductType type in types)
+            // Seed product types.
+            if (!context.ProductTypes.Any())
             {
-                context.ProductTypes.Add(type);
+                string typesText = File.ReadAllText("..\\Infrastructure\\Data\\SeedData\\types.json");
+                List<ProductType> types = JsonSerializer.Deserialize<List<ProductType>>(typesText);
+
+                foreach (ProductType type in types)
+                {
+                    context.ProductTypes.Add(type);
+                }
+
+                await context.SaveChangesAsync();
             }
 
-            await context.SaveChangesAsync();
-
-            // Seed producs.
-            string productsText = File.ReadAllText("..\\Infrastructure\\Data\\SeedData\\products.json");
-            List<Product> products = JsonSerializer.Deserialize<List<Product>>(productsText);
-
-            foreach (Product product in products)
+            // Seed products.
+            if (!context.Products.Any())
             {
-                context.Products.Add(product);
+                string productsText = File.ReadAllText("..\\Infrastructure\\Data\\SeedData\\products.json");
+                List<Product> products = JsonSerializer.Deserialize<List<Product>>(productsText);
+
+                foreach (Product product in products)
+                {
+                    context.Products.Add(product);
+                }
+
+                await context.SaveChangesAsync();
             }
 
-            await context.SaveChangesAsync();
+            // Seed delivery methods.
+            if (!context.DeliveryMethods.Any())
+            {
+                string deliveryMethodsText = File.ReadAllText("..\\Infrastructure\\Data\\SeedData\\delivery.json");
+                List<DeliveryMethod> deliveryMethods = JsonSerializer.Deserialize<List<DeliveryMethod>>(deliveryMethodsText);
 
+                foreach (DeliveryMethod method in deliveryMethods)
+                {
+                    context.DeliveryMethods.Add(method);
+                }
+
+                await context.SaveChangesAsync();
+            }
         }
         catch (Exception exception)
         {

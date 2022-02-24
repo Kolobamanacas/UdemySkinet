@@ -8,12 +8,12 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
 {
     public void Configure(EntityTypeBuilder<Product> builder)
     {
-        builder.Property(p => p.Id).IsRequired();
-        builder.Property(p => p.Name).IsRequired().HasMaxLength(100);
-        builder.Property(p => p.Name).IsRequired();
-        builder.Property(p => p.Price).HasColumnType("decimal(18,2)");
-        builder.Property(p => p.PictureUrl).IsRequired();
-        builder.HasOne(b => b.ProductBrand).WithMany().HasForeignKey(p => p.ProductBrandId);
-        builder.HasOne(t => t.ProductType).WithMany().HasForeignKey(p => p.ProductTypeId);
+        builder.Property(product => product.Id).IsRequired();
+        builder.Property(product => product.Name).IsRequired().HasMaxLength(100);
+        builder.Property(product => product.Name).IsRequired();
+        builder.Property(product => product.Price).HasColumnType("decimal(18,2)");
+        builder.Property(product => product.PictureUrl).IsRequired();
+        builder.HasOne(product => product.ProductBrand).WithMany().HasForeignKey(product => product.ProductBrandId);
+        builder.HasOne(product => product.ProductType).WithMany().HasForeignKey(product => product.ProductTypeId);
     }
 }
