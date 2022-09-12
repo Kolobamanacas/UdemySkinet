@@ -11,13 +11,13 @@ export class TestErrorComponent implements OnInit {
   baseUrl = environment.apiUrl;
   validationErrors: string[] = [];
 
-  constructor(private http: HttpClient) { }
+  constructor(private httpClient: HttpClient) { }
 
   ngOnInit(): void {
   }
 
   get404Error() {
-    this.http.get(this.baseUrl + 'products/00000000-0000-0000-0000-000000000000').subscribe((response) => {
+    this.httpClient.get(this.baseUrl + 'products/00000000-0000-0000-0000-000000000000').subscribe((response) => {
       console.log(response);
     }, (error) => {
       console.log(error);
@@ -25,7 +25,7 @@ export class TestErrorComponent implements OnInit {
   }
 
   get500Error() {
-    this.http.get(this.baseUrl + 'buggy/servererror').subscribe((response) => {
+    this.httpClient.get(this.baseUrl + 'buggy/servererror').subscribe((response) => {
       console.log(response);
     }, (error) => {
       console.log(error);
@@ -33,7 +33,7 @@ export class TestErrorComponent implements OnInit {
   }
 
   get400Error() {
-    this.http.get(this.baseUrl + 'buggy/badrequest').subscribe((response) => {
+    this.httpClient.get(this.baseUrl + 'buggy/badrequest').subscribe((response) => {
       console.log(response);
     }, (error) => {
       console.log(error);
@@ -41,7 +41,7 @@ export class TestErrorComponent implements OnInit {
   }
 
   get400ValidationError() {
-    this.http.get(this.baseUrl + 'products/empty-guid').subscribe((response) => {
+    this.httpClient.get(this.baseUrl + 'products/empty-guid').subscribe((response) => {
       console.log(response);
     }, (error) => {
       console.log(error);

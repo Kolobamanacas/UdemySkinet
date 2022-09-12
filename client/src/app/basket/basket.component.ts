@@ -17,12 +17,12 @@ export class BasketComponent implements OnInit {
     this.basket$ = this.basketService.basket$;
   }
 
-  incrementItemQuantity(item: IBasketItem) {
-    this.basketService.incrementItemQuantity(item);
-  }
-
   decrementItemQuantity(item: IBasketItem) {
     this.basketService.decrementItemQuantity(item);
+  }
+
+  incrementItemQuantity(item: IBasketItem) {
+    this.basketService.incrementItemQuantity(item);
   }
 
   removeBasketItem(item: IBasketItem) {

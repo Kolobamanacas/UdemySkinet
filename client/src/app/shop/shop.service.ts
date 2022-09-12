@@ -14,7 +14,7 @@ import { ShopParams } from '../shared/models/shopParams';
 export class ShopService {
   baseUrl = 'https://localhost:5001/api/';
 
-  constructor(private http: HttpClient) { }
+  constructor(private httpClient: HttpClient) { }
 
   getProducts(shopParams: ShopParams): Observable<IPagination | null> {
     let queryParams = new HttpParams();
@@ -35,7 +35,7 @@ export class ShopService {
     queryParams = queryParams.append('pageIndex', shopParams.pageNumber.toString());
     queryParams = queryParams.append('pageIndex', shopParams.pageSize.toString());
 
-    return this.http
+    return this.httpClient
       .get<IPagination>(this.baseUrl + 'products', { observe: 'response', params: queryParams })
       .pipe(
         map((response) => {
@@ -45,14 +45,14 @@ export class ShopService {
   }
 
   getProduct(id: string): Observable<IProduct> {
-    return this.http.get<IProduct>(this.baseUrl + 'products/' + id);
+    return this.httpClient.get<IProduct>(this.baseUrl + 'products/' + id);
   }
 
   getBrands(): Observable<IProductBrand[]> {
-    return this.http.get<IProductBrand[]>(this.baseUrl + 'products/brands');
+    return this.httpClient.get<IProductBrand[]>(this.baseUrl + 'products/brands');
   }
 
   getTypes(): Observable<IProductType[]> {
-    return this.http.get<IProductType[]>(this.baseUrl + 'products/types');
+    return this.httpClient.get<IProductType[]>(this.baseUrl + 'products/types');
   }
 }
