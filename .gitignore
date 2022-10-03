@@ -418,3 +418,7 @@ ssl/
 
 # Redis dump files
 *.rdb
+
+# Environmental variables
+environment.ts
+environment.prod.ts
