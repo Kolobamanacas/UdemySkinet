@@ -19,6 +19,7 @@
     "@angular/platform-browser": "~12.2.0",
     "@angular/platform-browser-dynamic": "~12.2.0",
     "@angular/router": "~12.2.0",
+    "@stripe/stripe-js": "^1.38.1",
     "@types/uuid": "^8.3.4",
     "bootstrap": "^4.6.1",
     "bootswatch": "^5.1.3",

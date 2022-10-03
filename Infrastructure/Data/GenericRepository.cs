@@ -23,7 +23,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
         return await context.Set<T>().ToListAsync();
     }
 
-    public async Task<T> GetByIdAsync(Guid id)
+    public async Task<T?> GetByIdAsync(Guid? id)
     {
         return await context.Set<T>().FindAsync(id);
     }
@@ -33,7 +33,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
         return await ApplySpecification(specification).ToListAsync();
     }
 
-    public async Task<T> GetOneAsync(ISpecification<T> specification)
+    public async Task<T?> GetOneAsync(ISpecification<T> specification)
     {
         return await ApplySpecification(specification).FirstOrDefaultAsync();
     }

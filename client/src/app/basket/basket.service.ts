@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
-import { Basket, IBasket, IBasketItem, IBasketTotals } from '../shared/models/basket';
+import { Basket, BasketTotals, IBasket, IBasketItem, IBasketTotals } from '../shared/models/basket';
 import { IDeliveryMethod } from '../shared/models/deliveryMethod';
 import { IProduct } from '../shared/models/product';
 
@@ -24,6 +24,7 @@ export class BasketService {
     return this.httpClient.get<IBasket>(this.baseUrl + 'basket?id=' + id)
       .pipe(map((basket: IBasket) => {
         this.basketSource.next(basket);
+        this.shippingCost = basket.shippingPrice ?? 0;
         this.calculateTotals();
       }));
   }
@@ -99,14 +100,14 @@ export class BasketService {
   }
 
   deleteLocalBasket(basketId: string) {
-    this.basketSource.next(undefined);
+    this.basketSource.next(new Basket());
     this.basketTotalSource.next(undefined);
     localStorage.removeItem('basket_id');
   }
 
   deleteBasket(basket: IBasket): void {
-    this.httpClient.delete(this.baseUrl + 'basketId?id=' + basket.id).subscribe(() => {
-      this.basketSource.next(undefined);
+    this.httpClient.delete(this.baseUrl + 'basket?id=' + basket.id).subscribe(() => {
+      this.basketSource.next(new Basket());
       this.basketTotalSource.next(undefined);
       localStorage.removeItem('basket_id');
     }, (error) => {
@@ -116,7 +117,28 @@ export class BasketService {
 
   setShippingPrice(deliveryMethod: IDeliveryMethod): void {
     this.shippingCost = deliveryMethod.price;
+    const basket = this.getCurrentBasketValue();
+
+    if (!basket) {
+      this.calculateTotals();
+      return;
+    }
+
+    basket.deliveryMethodId = deliveryMethod.id;
+    basket.shippingPrice = deliveryMethod.price;
     this.calculateTotals();
+    this.setBasket(basket);
+  }
+
+  createPaymentIntent(): Observable<void> {
+    const basketId = this.getCurrentBasketValue()?.id ?? '';
+
+    return this.httpClient.post<IBasket>(this.baseUrl + 'payments/' + basketId, {})
+      .pipe(
+        map((responseBasket: IBasket) => {
+          this.basketSource.next(responseBasket);
+        })
+      );
   }
 
   private mapProductItemToBasketItem(product: IProduct, quantity: number): IBasketItem {
@@ -152,6 +174,11 @@ export class BasketService {
 
   private calculateTotals(): void {
     const basket = this.getCurrentBasketValue();
+
+    if (!basket) {
+      return;
+    }
+
     const shipping = this.shippingCost;
     const subtotal: number = basket?.items.reduce((currentSum: number, currentItem: IBasketItem) => {
       return (currentItem.price * currentItem.quantity) + currentSum;

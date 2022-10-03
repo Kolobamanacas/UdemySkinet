@@ -1,7 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Observable } from 'rxjs';
 import { AccountService } from '../account/account.service';
+import { BasketService } from '../basket/basket.service';
 import { IAddress } from '../shared/models/address';
+import { IBasketTotals } from '../shared/models/basket';
 
 @Component({
   selector: 'app-checkout',
@@ -10,12 +13,18 @@ import { IAddress } from '../shared/models/address';
 })
 export class CheckoutComponent implements OnInit {
   checkoutForm: FormGroup = new FormGroup({});
+  basketTotals$: Observable<IBasketTotals | undefined> = new Observable<IBasketTotals | undefined>();
 
-  constructor(private formBuilder: FormBuilder, private accountService: AccountService) { }
+  constructor(
+    private formBuilder: FormBuilder,
+    private accountService: AccountService,
+    private basketService: BasketService) { }
 
   ngOnInit(): void {
     this.createCheckoutForm();
     this.getAddressFormValues();
+    this.getDeliveryMethodValue();
+    this.basketTotals$ = this.basketService.basketTotal$;
   }
 
   createCheckoutForm(): void {
@@ -31,7 +40,7 @@ export class CheckoutComponent implements OnInit {
       deliveryForm: this.formBuilder.group({
         deliveryMethod: [undefined, Validators.required]
       }),
-      payment: this.formBuilder.group({
+      paymentForm: this.formBuilder.group({
         cardHolderName: [undefined, Validators.required]
       })
     });
@@ -48,5 +57,15 @@ export class CheckoutComponent implements OnInit {
       }, (error) => {
         console.log(`Something went wrong during getting user address. Here is the error.\n${error}`);
       });
+  }
+
+  getDeliveryMethodValue(): void {
+    const basket = this.basketService.getCurrentBasketValue();
+
+    if (!basket || !basket.deliveryMethodId) {
+      return;
+    }
+
+    this.checkoutForm.get('deliveryForm')?.get('deliveryMethod')?.patchValue(basket.deliveryMethodId);
   }
 }

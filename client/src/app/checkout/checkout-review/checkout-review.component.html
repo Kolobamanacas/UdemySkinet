@@ -1,5 +1,9 @@
 <div class="mt-4">
-  <app-basket-summary [isReadOnly]="true"></app-basket-summary>
+  <app-basket-summary
+    [isBasket]="true"
+    [isReadOnly]="true"
+    [basketItems]="(basket$ | async)?.items ?? []">
+  </app-basket-summary>
 </div>
 
 <div class="float-none d-flex justify-content-between flex-column flex-lg-row mb-5">
@@ -7,7 +11,7 @@
     <i class="fa fa-angle-left"></i> Back to Delivery
   </button>
 
-  <button class="btn btn-primary" cdkStepperNext>
+  <button (click)="createPaymentIntent()" class="btn btn-primary">
     Go to Payment <i class="fa fa-angle-right"></i>
   </button>
 </div>

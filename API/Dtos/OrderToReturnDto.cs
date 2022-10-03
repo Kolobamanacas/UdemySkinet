@@ -6,7 +6,7 @@ namespace API.Dtos;
 
 public class OrderToReturnDto
 {
-    Guid Id { get; set; }
+    public Guid Id { get; set; }
     public string BuyerEmail { get; set; }
     public DateTimeOffset OrderDate { get; set; } = DateTimeOffset.UtcNow;
     public Address ShipToAddress { get; set; }
