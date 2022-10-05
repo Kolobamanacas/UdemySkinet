@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -16,10 +17,12 @@ public class StoreContextSeed
     {
         try
         {
+            string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
             // Seed product brands.
             if (!context.ProductBrands.Any())
             {
-                string brandsText = File.ReadAllText("..\\Infrastructure\\Data\\SeedData\\brands.json");
+                string brandsText = File.ReadAllText(path + @"/Data/SeedData/brands.json");
                 List<ProductBrand> brands = JsonSerializer.Deserialize<List<ProductBrand>>(brandsText);
 
                 foreach (ProductBrand brand in brands)
@@ -33,7 +36,7 @@ public class StoreContextSeed
             // Seed product types.
             if (!context.ProductTypes.Any())
             {
-                string typesText = File.ReadAllText("..\\Infrastructure\\Data\\SeedData\\types.json");
+                string typesText = File.ReadAllText(path + @"/Data/SeedData/types.json");
                 List<ProductType> types = JsonSerializer.Deserialize<List<ProductType>>(typesText);
 
                 foreach (ProductType type in types)
@@ -47,7 +50,7 @@ public class StoreContextSeed
             // Seed products.
             if (!context.Products.Any())
             {
-                string productsText = File.ReadAllText("..\\Infrastructure\\Data\\SeedData\\products.json");
+                string productsText = File.ReadAllText(path + @"/Data/SeedData/products.json");
                 List<Product> products = JsonSerializer.Deserialize<List<Product>>(productsText);
 
                 foreach (Product product in products)
@@ -61,7 +64,7 @@ public class StoreContextSeed
             // Seed delivery methods.
             if (!context.DeliveryMethods.Any())
             {
-                string deliveryMethodsText = File.ReadAllText("..\\Infrastructure\\Data\\SeedData\\delivery.json");
+                string deliveryMethodsText = File.ReadAllText(path + @"/Data/SeedData/delivery.json");
                 List<DeliveryMethod> deliveryMethods = JsonSerializer.Deserialize<List<DeliveryMethod>>(deliveryMethodsText);
 
                 foreach (DeliveryMethod method in deliveryMethods)

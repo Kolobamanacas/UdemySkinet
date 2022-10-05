@@ -20,10 +20,12 @@
   </ItemGroup>
 
   <ItemGroup>
+	  <Content Include="Content\**" CopyToOutputDirectory="PreserveNewest" />
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Content\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 

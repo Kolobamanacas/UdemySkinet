@@ -15,7 +15,7 @@ public class PaymentsController : BaseApiController
 {
     private readonly IPaymentService paymentService;
     private readonly ILogger<PaymentsController> logger;
-    private string WhSecret;
+    private readonly string whSecret;
 
     public PaymentsController(
         IPaymentService paymentService,
@@ -24,7 +24,7 @@ public class PaymentsController : BaseApiController
     {
         this.paymentService = paymentService;
         this.logger = logger;
-        this.WhSecret = configuration["StripeSettings:WhSecret"] ?? "";
+        whSecret = configuration["StripeSettings:WhSecret"] ?? "";
     }
 
     [Authorize]
@@ -45,7 +45,7 @@ public class PaymentsController : BaseApiController
     public async Task<ActionResult> StripeWebhook()
     {
         string json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
-        Event stripeEvent = EventUtility.ConstructEvent(json, Request.Headers["Stripe-Signature"], WhSecret);
+        Event stripeEvent = EventUtility.ConstructEvent(json, Request.Headers["Stripe-Signature"], whSecret);
         PaymentIntent paymentIntent;
         Order order;
 
