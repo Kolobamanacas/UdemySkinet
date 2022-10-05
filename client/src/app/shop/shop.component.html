@@ -4,13 +4,20 @@
       <ng-container *ngIf="types.length > 0 && brands.length > 0">
         <h5 class="text-warning ml-3 mt-4 mb-3">Sort</h5>
         <select class="custom-select mb-4" (change)="onSortSelected($any($event.target).value)">
-          <option *ngFor="let sort of sortOptions" [value]="sort.value">{{sort.name}}</option>
+          <option *ngFor="let sort of sortOptions"
+            [selected]="shopParams.sort === sort.value"
+            [value]="sort.value">
+            {{sort.name}}
+          </option>
         </select>
 
         <h5 class="text-warning ml-3">Brands</h5>
         <ul class="list-group my-3">
-          <li class="list-group-item" *ngFor="let brand of brands" [class.active]="brand.id === this.shopParams.brandId"
-            [value]="brand.id" (click)="onBrandSelected(brand.id)">
+          <li *ngFor="let brand of brands"
+            [class.active]="brand.id === this.shopParams.brandId"
+            [value]="brand.id"
+            (click)="onBrandSelected(brand.id)"
+            class="list-group-item">
             {{brand.name}}
           </li>
         </ul>
@@ -43,7 +50,11 @@
       </div>
 
       <div class="d-flex justify-content-center">
-        <app-pager [pageSize]="shopParams.pageSize" [totalCount]="totalCount" (pageChanged)="onPageChanged($event)">
+        <app-pager
+          [pageSize]="shopParams.pageSize"
+          [totalCount]="totalCount"
+          [pageNumber]="shopParams.pageNumber"
+          (pageChanged)="onPageChanged($event)">
         </app-pager>
       </div>
 

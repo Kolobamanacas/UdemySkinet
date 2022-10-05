@@ -33,6 +33,7 @@ public class ProductsController : BaseApiController
     }
 
     [HttpGet]
+    [Cached(600)]
     public async Task<ActionResult<Pagination<ProductToReturnDto>>> GetProducts(
         [FromQuery] ProductQueryParametersSpecification parameters)
     {
@@ -46,6 +47,7 @@ public class ProductsController : BaseApiController
     }
 
     [HttpGet("{id}")]
+    [Cached(600)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ProductToReturnDto>> GetProduct(Guid id)
@@ -62,12 +64,14 @@ public class ProductsController : BaseApiController
     }
 
     [HttpGet("brands")]
+    [Cached(600)]
     public async Task<ActionResult<IReadOnlyList<ProductBrand>>> GetProductBrands()
     {
         return Ok(await brandsRepository.GetAllAsync());
     }
 
     [HttpGet("types")]
+    [Cached(600)]
     public async Task<ActionResult<IReadOnlyList<ProductType>>> GetProductTypes()
     {
         return Ok(await typesRepository.GetAllAsync());

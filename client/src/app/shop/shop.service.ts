@@ -1,8 +1,8 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { IPagination } from '../shared/models/pagination';
+import { IPagination, Pagination } from '../shared/models/pagination';
 import { IProduct } from '../shared/models/product';
 import { IProductBrand } from '../shared/models/productBrand';
 import { IProductType } from '../shared/models/productType';
@@ -13,46 +13,111 @@ import { ShopParams } from '../shared/models/shopParams';
 })
 export class ShopService {
   baseUrl = 'https://localhost:5001/api/';
+  products: IProduct[] = [];
+  productBrands: IProductBrand[] = [];
+  productTypes: IProductType[] = [];
+  pagination: Pagination = new Pagination();
+  shopParams: ShopParams = new ShopParams();
+  productsCache: Map<string, IProduct[]> = new Map();
 
   constructor(private httpClient: HttpClient) { }
 
-  getProducts(shopParams: ShopParams): Observable<IPagination | null> {
+  getProducts(useCache: boolean): Observable<IPagination | null> {
+    if (!useCache) {
+      this.productsCache = new Map();
+    }
+
+    const shopParamsKey: string = Object.values(this.shopParams).join('-');
+
+    if (useCache
+      && this.productsCache.size > 0
+      && this.productsCache.has(shopParamsKey)) {
+        this.pagination.data = this.productsCache.get(shopParamsKey) ?? [];
+        return of(this.pagination);
+    }
+
     let queryParams = new HttpParams();
 
-    if (shopParams.brandId !== '') {
-      queryParams = queryParams.append('brandId', shopParams.brandId);
+    if (this.shopParams.brandId !== '') {
+      queryParams = queryParams.append('brandId', this.shopParams.brandId);
     }
 
-    if (shopParams.typeId !== '') {
-      queryParams = queryParams.append('typeId', shopParams.typeId);
+    if (this.shopParams.typeId !== '') {
+      queryParams = queryParams.append('typeId', this.shopParams.typeId);
     }
 
-    if (shopParams.search !== '') {
-      queryParams = queryParams.append('search', shopParams.search);
+    if (this.shopParams.search !== '') {
+      queryParams = queryParams.append('search', this.shopParams.search);
     }
 
-    queryParams = queryParams.append('sort', shopParams.sort);
-    queryParams = queryParams.append('pageIndex', shopParams.pageNumber.toString());
-    queryParams = queryParams.append('pageIndex', shopParams.pageSize.toString());
+    queryParams = queryParams.append('sort', this.shopParams.sort);
+    queryParams = queryParams.append('pageIndex', this.shopParams.pageNumber.toString());
+    queryParams = queryParams.append('pageIndex', this.shopParams.pageSize.toString());
 
     return this.httpClient
       .get<IPagination>(this.baseUrl + 'products', { observe: 'response', params: queryParams })
       .pipe(
-        map((response) => {
-          return response.body;
+        map((response: HttpResponse<IPagination>) => {
+          if (response.body) {
+            const paramsKey: string = Object.values(this.shopParams).join('-');
+            this.productsCache.set(paramsKey, response.body.data);
+            this.pagination = response.body;
+          }
+
+          return this.pagination;
         })
       );
   }
 
   getProduct(id: string): Observable<IProduct> {
+    let product: IProduct | undefined;
+
+    this.productsCache.forEach((products: IProduct[]) => {
+      product = products.find((productLocal: IProduct) => productLocal.id === id);
+    });
+
+    if (product) {
+      return of(product);
+    }
+
     return this.httpClient.get<IProduct>(this.baseUrl + 'products/' + id);
   }
 
   getBrands(): Observable<IProductBrand[]> {
-    return this.httpClient.get<IProductBrand[]>(this.baseUrl + 'products/brands');
+    if (this.productBrands.length > 0) {
+      return of(this.productBrands);
+    }
+
+    return this.httpClient.get<IProductBrand[]>(this.baseUrl + 'products/brands')
+      .pipe(map((brands: IProductBrand[]) => {
+        if (brands.length > 0) {
+          this.productBrands = brands;
+        }
+
+        return brands;
+      }));
   }
 
   getTypes(): Observable<IProductType[]> {
-    return this.httpClient.get<IProductType[]>(this.baseUrl + 'products/types');
+    if (this.productTypes.length > 0) {
+      return of(this.productTypes);
+    }
+
+    return this.httpClient.get<IProductType[]>(this.baseUrl + 'products/types')
+      .pipe(map((types: IProductType[]) => {
+        if (types.length > 0) {
+          this.productTypes = types;
+        }
+
+        return types;
+      }));
+  }
+
+  getShopParams(): ShopParams {
+    return this.shopParams;
+  }
+
+  setShopParams(params: ShopParams): void {
+    this.shopParams = params;
   }
 }
