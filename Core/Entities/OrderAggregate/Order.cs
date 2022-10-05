@@ -25,7 +25,7 @@ public class Order : BaseEntity
     }
 
     public string BuyerEmail { get; set; }
-    public DateTimeOffset OrderDate { get; set; } = DateTimeOffset.UtcNow;
+    public DateTime OrderDate { get; set; } = DateTime.UtcNow;
     public Address ShipToAddress { get; set; }
     public DeliveryMethod DeliveryMethod { get; set; }
     public IReadOnlyList<OrderItem> OrderItems { get; set; }

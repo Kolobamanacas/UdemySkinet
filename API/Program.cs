@@ -1,84 +1,82 @@
-// --- Old .Net 5 approach.
+using API.Extensionos;
+using API.Helpers;
+using API.Middleware;
 using Core.Entities.Identity;
 using Infrastructure.Data;
 using Infrastructure.Identity;
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
+using StackExchange.Redis;
 using System;
-using System.Threading.Tasks;
+using System.IO;
 
-namespace API
+
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+builder.Services.AddControllers();
+builder.Services.AddDbContext<StoreContext>(
+    options => options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSQLLocal")));
+builder.Services.AddDbContext<AppIdentityDbContext>(
+    options => options.UseNpgsql(builder.Configuration.GetConnectionString("IdentityConnection")));
+builder.Services.AddSingleton<IConnectionMultiplexer>((localConfig) =>
 {
-    public class Program
-    {
-        public static async Task Main(string[] args)
-        {
-            IHost host = CreateHostBuilder(args).Build();
+    ConfigurationOptions config = ConfigurationOptions.Parse(builder.Configuration.GetConnectionString("Redis"), true);
+    return ConnectionMultiplexer.Connect(config);
+});
+builder.Services.AddAutoMapper(typeof(MappingProfiles));
+builder.Services.AddApplicationServices();
+builder.Services.AddIdentityServices(builder.Configuration);
+builder.Services.AddSwaggerDocumentation();
+builder.Services.AddCors(
+    option => option.AddPolicy(
+        "CorsPolicy",
+        policy => policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("https://localhost:4200")));
 
-            using (IServiceScope scope = host.Services.CreateScope())
-            {
-                IServiceProvider services = scope.ServiceProvider;
-                ILoggerFactory loggerFactory = services.GetRequiredService<ILoggerFactory>();
+// Configure the HTTP requrest pipeline.
+WebApplication app = builder.Build();
+app.UseMiddleware<ExceptionMiddleware>();
+app.UseStatusCodePagesWithReExecute("/errors/{0}");
+app.UseHttpsRedirection();
 
-                try
-                {
-                    StoreContext context = services.GetRequiredService<StoreContext>();
-                    await context.Database.MigrateAsync();
-                    await StoreContextSeed.SeedAsync(context, loggerFactory);
+app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "Content")),
+    RequestPath = "/content"
+});
 
-                    UserManager<AppUser> userManager = services.GetRequiredService<UserManager<AppUser>>();
-                    AppIdentityDbContext identityContext = services.GetRequiredService<AppIdentityDbContext>();
-                    await identityContext.Database.MigrateAsync();
-                    await AppIdentityDbContextSeed.SeedUsersAsync(userManager);
-                }
-                catch (Exception exception)
-                {
-                    ILogger logger = loggerFactory.CreateLogger<Program>();
-                    logger.LogError(exception, "An error occure during migration");
-                }
-            }
+app.UseCors("CorsPolicy");
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseSwaggerDocumentation();
+app.MapControllers();
+app.MapFallbackToController("Index", "Fallback");
 
-            host.Run();
-        }
+using IServiceScope scope = app.Services.CreateScope();
+IServiceProvider services = scope.ServiceProvider;
+ILoggerFactory loggerFactory = services.GetRequiredService<ILoggerFactory>();
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>();
-                });
-    }
+try
+{
+    StoreContext context = services.GetRequiredService<StoreContext>();
+    await context.Database.MigrateAsync();
+    await StoreContextSeed.SeedAsync(context, loggerFactory);
+
+    UserManager<AppUser> userManager = services.GetRequiredService<UserManager<AppUser>>();
+    AppIdentityDbContext identityContext = services.GetRequiredService<AppIdentityDbContext>();
+    await identityContext.Database.MigrateAsync();
+    await AppIdentityDbContextSeed.SeedUsersAsync(userManager);
+}
+catch (Exception exception)
+{
+    ILogger logger = loggerFactory.CreateLogger<Program>();
+    logger.LogError(exception, "An error occure during migration");
 }
 
-
-
-// --- New .Net 6 approach.
-//var builder = WebApplication.CreateBuilder(args);
-
-//// Add services to the container.
-
-//builder.Services.AddControllers();
-//// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-//builder.Services.AddEndpointsApiExplorer();
-//builder.Services.AddSwaggerGen();
-
-//var app = builder.Build();
-
-//// Configure the HTTP request pipeline.
-//if (app.Environment.IsDevelopment())
-//{
-//    app.UseSwagger();
-//    app.UseSwaggerUI();
-//}
-
-//app.UseHttpsRedirection();
-
-//app.UseAuthorization();
-
-//app.MapControllers();
-
-//app.Run();
+await app.RunAsync();
